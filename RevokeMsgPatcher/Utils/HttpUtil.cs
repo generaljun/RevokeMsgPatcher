@@ -23,9 +23,9 @@ namespace RevokeMsgPatcher.Utils
         /// </summary>
         private static readonly string[] urls = new string[]
         {
-            "https://huiyadanli.coding.net/p/RevokeMsgPatcher/d/RevokeMsgPatcher/git/raw/master/RevokeMsgPatcher.Assistant/Data/0.8/patch.json",
-            "https://gitee.com/huiyadanli/RevokeMsgPatcher/raw/master/RevokeMsgPatcher.Assistant/Data/0.8/patch.json",
-            "https://raw.githubusercontent.com/huiyadanli/RevokeMsgPatcher/master/RevokeMsgPatcher.Assistant/Data/0.8/patch.json"
+            "https://gitee.com/huiyadanli/RevokeMsgPatcher/raw/master/RevokeMsgPatcher.Assistant/Data/1.1/patch.json",
+            "https://huiyadanli.coding.net/p/RevokeMsgPatcher/d/RevokeMsgPatcher/git/raw/master/RevokeMsgPatcher.Assistant/Data/1.1/patch.json",
+            "https://raw.githubusercontent.com/huiyadanli/RevokeMsgPatcher/master/RevokeMsgPatcher.Assistant/Data/1.1/patch.json"
         };
 
         private static int i = 0;
@@ -39,6 +39,7 @@ namespace RevokeMsgPatcher.Utils
             catch (Exception ex)
             {
                 Console.WriteLine("第" + (i + 1) + "次请求异常:[" + ex.Message + "]\nURL:" + urls[i]);
+                GAHelper.Instance.RequestPageView($"/main/json/request_ex/{i + 1}/{ex.Message}", "第" + (i + 1) + "次请求异常:[" + ex.Message + "]");
                 i++;
                 if (i >= urls.Length)
                 {

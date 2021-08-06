@@ -34,6 +34,9 @@
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,6 +66,7 @@
     <Compile Include="Forms\FormPatchInfo.Designer.cs">
       <DependentUpon>FormPatchInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\UIController.cs" />
     <Compile Include="Matcher\BoyerMooreMatcher.cs" />
     <Compile Include="Matcher\FuzzyMatcher.cs" />
     <Compile Include="Matcher\ModifyFinder.cs" />
@@ -104,6 +108,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

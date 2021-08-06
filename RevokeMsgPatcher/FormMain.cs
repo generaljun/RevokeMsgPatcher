@@ -1,7 +1,9 @@
-﻿using RevokeMsgPatcher.Model;
+﻿using RevokeMsgPatcher.Forms;
+using RevokeMsgPatcher.Model;
 using RevokeMsgPatcher.Modifier;
 using RevokeMsgPatcher.Utils;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -22,8 +24,9 @@ namespace RevokeMsgPatcher
 
         private string thisVersion;
         private bool needUpdate = false;
+        private string getPatchJsonStatus = "GETTING";  // GETTING FAIL SUCCESS
 
-        private GAHelper ga = new GAHelper(); // Google Analytics 记录
+        private readonly GAHelper ga = GAHelper.Instance; // Google Analytics 记录
 
         public void InitModifier()
         {
@@ -70,13 +73,35 @@ namespace RevokeMsgPatcher
         {
             // 自动获取应用安装路径
             txtPath.Text = modifier.FindInstallPath();
-            btnRestore.Enabled = false;
-            // 显示是否能够备份还原
-            if (!string.IsNullOrEmpty(txtPath.Text))
+            // 显示是否能够备份还原、版本和功能
+            InitEditorsAndUI(txtPath.Text);
+        }
+
+        private void InitEditorsAndUI(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
             {
-                modifier.InitEditors(txtPath.Text);
-                modifier.SetVersionLabel(lblVersion);
+                EnableAllButton(false);
+
+                // 清空界面元素
+                lblVersion.Text = "";
+                panelCategories.Controls.Clear();
+
+                // 重新计算并修改界面元素
+                modifier.InitEditors(path);
+                modifier.SetVersionLabelAndCategoryCategories(lblVersion, panelCategories);
+
+                EnableAllButton(true);
+
+                // 重新显示备份状态
+                btnRestore.Enabled = false;
                 btnRestore.Enabled = modifier.BackupExists();
+
+                List<string> categories = UIController.GetCategoriesFromPanel(panelCategories);
+                if (categories != null && categories.Count == 0)
+                {
+                    btnPatch.Enabled = false;
+                }
             }
         }
 
@@ -93,13 +118,34 @@ namespace RevokeMsgPatcher
             string version = modifier.GetVersion(); // 应用版本
             ga.RequestPageView($"{enName}/{version}/patch", "点击防撤回");
 
+            //if (getPatchJsonStatus != "SUCCESS")
+            //{
+            //    if (MessageBox.Show("当前程序未获取到最新补丁信息(或者正在获取中，如果成功请无视本提示)，可能会出现补丁安装失败的情况，你可以通过以下方法重试:" + Environment.NewLine
+            //        + "1. 重新启动本程序，重新获取最新补丁信息" + Environment.NewLine
+            //        + "2. 如果每次都是[获取最新补丁信息失败]，请检查自身网络是否有问题，或者等一段时间后重试" + Environment.NewLine
+            //        + "点击 \"确定\" 继续安装补丁。",
+            //        "提示", MessageBoxButtons.OKCancel) != DialogResult.OK)
+            //    {
+            //        return;
+            //    }
+            //}
+
             EnableAllButton(false);
             // a.重新初始化编辑器
             modifier.InitEditors(txtPath.Text);
-            // b.计算SHA1，验证文件完整性，寻找对应的补丁信息（精确版本、通用特征码两种补丁信息）
+            // b.获取选择的功能 （精准匹配返回null） // TODO 此处逻辑可以优化 不可完全信任UI信息
+            List<string> categories = UIController.GetCategoriesFromPanel(panelCategories);
+            if (categories != null && categories.Count == 0)
+            {
+                MessageBox.Show("请至少选择一项功能");
+                EnableAllButton(true);
+                btnRestore.Enabled = modifier.BackupExists();
+                return;
+            }
+            // c.计算SHA1，验证文件完整性，寻找对应的补丁信息（精确版本、通用特征码两种补丁信息）
             try
             {
-                modifier.ValidateAndFindModifyInfo();
+                modifier.ValidateAndFindModifyInfo(categories);
             }
             catch (BusinessException ex)
             {
@@ -126,12 +172,13 @@ namespace RevokeMsgPatcher
                 return;
             }
 
-            // c.打补丁
+            // d.打补丁
             try
             {
                 modifier.Patch();
-                ga.RequestPageView($"{enName}/{version}/patch/succ", "防撤回成功");
+                ga.RequestPageView($"{enName}/{version}/patch/succ", "补丁安装成功");
                 MessageBox.Show("补丁安装成功！");
+
             }
             catch (BusinessException ex)
             {
@@ -147,8 +194,7 @@ namespace RevokeMsgPatcher
             }
             finally
             {
-                EnableAllButton(true);
-                btnRestore.Enabled = modifier.BackupExists();
+                InitEditorsAndUI(txtPath.Text);
             }
 
         }
@@ -157,11 +203,12 @@ namespace RevokeMsgPatcher
         {
             if (modifier.IsAllFilesExist(txtPath.Text))
             {
-                modifier.InitEditors(txtPath.Text);
-                btnRestore.Enabled = modifier.BackupExists();
+                InitEditorsAndUI(txtPath.Text);
             }
             else
             {
+                UIController.AddMsgToPanel(panelCategories, "请输入正确的应用路径");
+                lblVersion.Text = "";
                 btnPatch.Enabled = false;
                 btnRestore.Enabled = false;
             }
@@ -180,14 +227,8 @@ namespace RevokeMsgPatcher
                 else
                 {
                     txtPath.Text = dialog.SelectedPath;
-                    btnRestore.Enabled = false;
-                    // 显示是否能够备份还原
-                    if (!string.IsNullOrEmpty(txtPath.Text))
-                    {
-                        modifier.InitEditors(txtPath.Text);
-                        modifier.SetVersionLabel(lblVersion);
-                        btnRestore.Enabled = modifier.BackupExists();
-                    }
+                    // 显示是否能够备份还原、版本和功能
+                    InitEditorsAndUI(txtPath.Text);
                 }
             }
         }
@@ -209,21 +250,25 @@ namespace RevokeMsgPatcher
                 MessageBox.Show(ex.Message);
             }
             EnableAllButton(true);
-            btnRestore.Enabled = modifier.BackupExists();
+            // 重新计算显示是否能够备份还原、版本和功能
+            InitEditorsAndUI(txtPath.Text);
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://github.com/huiyadanli/RevokeMsgPatcher");
+            Process.Start("https://github.com/huiyadanli/RevokeMsgPatcher");
         }
 
         private async void FormMain_Load(object sender, EventArgs e)
         {
             // 异步获取最新的补丁信息
             string json = await HttpUtil.GetPatchJsonAsync();
+            //string json = null; // local test
             if (string.IsNullOrEmpty(json))
             {
                 lblUpdatePachJson.Text = "[ 获取最新补丁信息失败 ]";
+                ga.RequestPageView($"/main/json/fail", $"获取最新补丁信息失败");
+                getPatchJsonStatus = "FAIL";
             }
             else
             {
@@ -249,12 +294,15 @@ namespace RevokeMsgPatcher
                         lblUpdatePachJson.Text = "[ 获取成功，点击查看更多信息 ]";
                         lblUpdatePachJson.ForeColor = Color.RoyalBlue;
                     }
+                    getPatchJsonStatus = "SUCCESS";
                     InitControls();
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                     lblUpdatePachJson.Text = "[ 更换新配置时异常 ]";
+                    ga.RequestPageView($"/main/json/exception", $"更换新配置时异常");
+                    getPatchJsonStatus = "FAIL";
                 }
             }
         }
@@ -302,15 +350,9 @@ namespace RevokeMsgPatcher
             }
             txtPath.Text = modifier.FindInstallPath();
             EnableAllButton(true);
-            lblVersion.Text = "";
-            btnRestore.Enabled = false;
-            // 显示是否能够备份还原
-            if (!string.IsNullOrEmpty(txtPath.Text))
-            {
-                modifier.InitEditors(txtPath.Text);
-                modifier.SetVersionLabel(lblVersion);
-                btnRestore.Enabled = modifier.BackupExists();
-            }
+
+            // 重新计算显示是否能够备份还原、版本和功能
+            InitEditorsAndUI(txtPath.Text);
             ga.RequestPageView($"{GetCheckedRadioButtonNameEn()}/{lblVersion.Text}/switch", "切换标签页");
         }
 

@@ -9,23 +9,20 @@
 	<a href="https://github.com/huiyadanli/RevokeMsgPatcher/releases">
 		<img src="https://img.shields.io/github/downloads/huiyadanli/RevokeMsgPatcher/total.svg?style=flat-square"/>
 	</a>
-	<a href="http://hits.dwyl.io/huiyadanli/RevokeMsgPatcher">
-		<img src="http://hits.dwyl.io/huiyadanli/RevokeMsgPatcher.svg"/>
-	</a>
 	<a href="https://ci.appveyor.com/project/huiyadanli/RevokeMsgPatcher">
 		<img src="https://img.shields.io/appveyor/ci/huiyadanli/RevokeMsgPatcher.svg?style=flat-square"/>
 	</a>
 </p>
 
 # 👀微信/QQ/TIM防撤回补丁
-适用于 Windows 下 PC 版微信/QQ/TIM的防撤回补丁。**从 0.7 版本开始通杀所有新版本微信/QQ（含测试版）**
+适用于 Windows 下 PC 版微信/QQ/TIM的防撤回补丁。**支持最新版微信/QQ/TIM**，其中微信能够选择安装多开功能。
 
 <img width="180px" src="https://raw.githubusercontent.com/huiyadanli/RevokeMsgPatcher/master/Images/revoke.jpg"/>
 
 下载地址：
-**[⚡️点我下载最新版本](https://github.com/huiyadanli/RevokeMsgPatcher/releases/download/0.8/RevokeMsgPatcher.v0.8.zip)** |
-[☁备用下载-蓝奏云](https://www.lanzous.com/i8lhkyf) | 
-[☁备用下载-百度云](https://pan.baidu.com/s/11LY3pvNlOyZZGxILboVnxg) 提取码：coco
+**[⚡️点我下载最新版本](https://github.com/huiyadanli/RevokeMsgPatcher/releases/download/1.1/RevokeMsgPatcher.v1.1.zip)** |
+[☁备用下载-蓝奏云](https://wwx.lanzoui.com/inDgks3xikh) | 
+[☁备用下载-百度云](https://pan.baidu.com/s/16CvffYNCy5PbnQNydZE5RA) 提取码：u764
 
 相关文档：
 **[✔支持哪些版本](https://github.com/huiyadanli/RevokeMsgPatcher/wiki/%E7%89%88%E6%9C%AC%E6%94%AF%E6%8C%81)** | 
@@ -56,6 +53,8 @@
 4. 选择微信/QQ/TIM的安装路径。如果你用的安装版的微信/QQ/TIM，正常情况下本程序会自动从注册表中获取安装路径，绿色版需要手动选择路径。
 
 5. 点击防撤回。界面可能会出现一段时间的无响应，请耐心等待。**由于修改了微信的 WeChatWin.dll 文件、QQ/TIM的 IM.dll 文件，杀毒软件可能会弹出警告，放行即可。**
+
+注意：微信/QQ/TIM更新之后要重新安装补丁！
 
 ## ❤Thanks
 
