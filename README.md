@@ -20,9 +20,9 @@
 <img width="180px" src="https://raw.githubusercontent.com/huiyadanli/RevokeMsgPatcher/master/Images/revoke.jpg"/>
 
 下载地址：
-**[⚡️点我下载最新版本](https://github.com/huiyadanli/RevokeMsgPatcher/releases/download/1.1/RevokeMsgPatcher.v1.1.zip)** |
-[☁备用下载-蓝奏云](https://wwx.lanzoui.com/inDgks3xikh) | 
-[☁备用下载-百度云](https://pan.baidu.com/s/16CvffYNCy5PbnQNydZE5RA) 提取码：u764
+**[⚡️点我下载最新版本](https://github.com/huiyadanli/RevokeMsgPatcher/releases/download/1.6/RevokeMsgPatcher.v1.6.zip)** |
+[☁备用下载-蓝奏云](https://wwn.lanzouf.com/b00ppm2pa) 密码:4ho8 | 
+[☁备用下载-百度云](https://pan.baidu.com/s/15ilr78t8F1-VW8eUZSkr_Q?pwd=3rrj) 
 
 相关文档：
 **[✔支持哪些版本](https://github.com/huiyadanli/RevokeMsgPatcher/wiki/%E7%89%88%E6%9C%AC%E6%94%AF%E6%8C%81)** | 
@@ -44,7 +44,7 @@
 1. 首先，你的系统需要满足以下条件：
 
     * Windows 7 或更高版本，**不支持XP**。
-    * [.NET Framework 4.5](https://www.microsoft.com/zh-cn/download/details.aspx?id=30653) 或更高版本。**低于此版本在打开程序时可能无反应，或者直接报错**。
+    * [.NET Framework 4.5.2](https://www.microsoft.com/en-us/download/details.aspx?id=42642) 或更高版本。**低于此版本在打开程序时可能无反应，或者直接报错**。
 
 2. 使用本程序前，先关闭微信/QQ/TIM。
 
@@ -56,11 +56,17 @@
 
 注意：微信/QQ/TIM更新之后要重新安装补丁！
 
-## ❤Thanks
+## 💡致谢
 
-[wechat_anti_revoke](https://github.com/36huo/wechat_anti_revoke)
+本项目早期内容源自 [wechat_anti_revoke](https://github.com/36huo/wechat_anti_revoke) 项目
+
+## ❤️投喂
+
+觉的好用的话，可以支持作者哟ヾ(･ω･`｡) 
+* [⚡爱发电](https://afdian.net/@huiyadanli)
+* [🍚顿顿饭](https://dun.mianbaoduo.com/@huiyadanli)
 
 ## 📄License
-GPLv3
+[GPLv3](https://github.com/huiyadanli/RevokeMsgPatcher/blob/master/LICENSE)
 
 ![](https://raw.githubusercontent.com/huiyadanli/RevokeMsgPatcher/master/Images/give_a_star.png)

@@ -28,11 +28,13 @@ namespace RevokeMsgPatcher
 
         private readonly GAHelper ga = GAHelper.Instance; // Google Analytics 记录
 
+        Bag bag = null;
+
         public void InitModifier()
         {
             // 从配置文件中读取配置
             JavaScriptSerializer serializer = new JavaScriptSerializer();
-            Bag bag = serializer.Deserialize<Bag>(Properties.Resources.PatchJson);
+            bag = serializer.Deserialize<Bag>(Properties.Resources.PatchJson);
 
             // 初始化每个应用对应的修改者
             wechatModifier = new WechatModifier(bag.Apps["Wechat"]);
@@ -74,7 +76,7 @@ namespace RevokeMsgPatcher
             // 自动获取应用安装路径
             txtPath.Text = modifier.FindInstallPath();
             // 显示是否能够备份还原、版本和功能
-            InitEditorsAndUI(txtPath.Text);
+            //InitEditorsAndUI(txtPath.Text);
         }
 
         private void InitEditorsAndUI(string path)
@@ -88,7 +90,12 @@ namespace RevokeMsgPatcher
                 panelCategories.Controls.Clear();
 
                 // 重新计算并修改界面元素
-                modifier.InitEditors(path);
+                bool hasEditors = modifier.InitEditors(path);
+                if (!hasEditors)
+                {
+                    btnPatch.Enabled = false;
+                    return;
+                }
                 modifier.SetVersionLabelAndCategoryCategories(lblVersion, panelCategories);
 
                 EnableAllButton(true);
@@ -132,7 +139,12 @@ namespace RevokeMsgPatcher
 
             EnableAllButton(false);
             // a.重新初始化编辑器
-            modifier.InitEditors(txtPath.Text);
+            bool hasEditors = modifier.InitEditors(txtPath.Text);
+            if (!hasEditors)
+            {
+                btnPatch.Enabled = false;
+                return;
+            }
             // b.获取选择的功能 （精准匹配返回null） // TODO 此处逻辑可以优化 不可完全信任UI信息
             List<string> categories = UIController.GetCategoriesFromPanel(panelCategories);
             if (categories != null && categories.Count == 0)
@@ -142,6 +154,25 @@ namespace RevokeMsgPatcher
                 btnRestore.Enabled = modifier.BackupExists();
                 return;
             }
+            // 20220806 偷懒的特殊逻辑，用于提示用户选择对防撤回功能进行二选一
+            if (categories.Contains("防撤回(老)") && categories.Contains("防撤回带提示(新)"))
+            {
+                DialogResult result = MessageBox.Show(@"防撤回(老) 和 防撤回带提示(新) 两个功能二选一即可！
+
+1. 防撤回(老) 没有提示；
+
+2. 防撤回带提示(新) 有撤回提示 但是存在以下问题：
+    a. 如果正在和对方聊天时，对方撤回了消息，那撤回提示依然不会显示，只有在左侧预览窗有显示撤回，需要切换到和别人的聊天窗再切回来才能看到撤回提示，如果是把聊天拉出单独窗口，一直不会有撤回提示。
+    b. 视频/图片消息撤回后会被删除，无法查看
+    c. 部分历史消息无法防撤回；
+
+点击确定继续，点击取消重新选择！", "功能选择提示", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result != DialogResult.Yes)
+                {
+                    return;
+                }
+            }
+
             // c.计算SHA1，验证文件完整性，寻找对应的补丁信息（精确版本、通用特征码两种补丁信息）
             try
             {
@@ -275,27 +306,36 @@ namespace RevokeMsgPatcher
                 try
                 {
                     JavaScriptSerializer serializer = new JavaScriptSerializer();
-                    Bag bag = serializer.Deserialize<Bag>(json);
+                    Bag newBag = serializer.Deserialize<Bag>(json);
 
-                    wechatModifier.Config = bag.Apps["Wechat"];
-                    qqModifier.Config = bag.Apps["QQ"];
-                    timModifier.Config = bag.Apps["TIM"];
-                    qqLiteModifier.Config = bag.Apps["QQLite"];
-
-                    if (Convert.ToDecimal(bag.LatestVersion) > Convert.ToDecimal(thisVersion))
+                    if (Convert.ToDecimal(newBag.LatestVersion) > Convert.ToDecimal(thisVersion))
                     {
                         needUpdate = true;
-                        lblUpdatePachJson.Text = $"[ 存在最新版本 {bag.LatestVersion} ]";
+                        lblUpdatePachJson.Text = $"[ 存在最新版本 {newBag.LatestVersion} ]";
                         lblUpdatePachJson.ForeColor = Color.Red;
                     }
-                    else
+                    else if (bag.PatchVersion == 0 || newBag.PatchVersion > bag.PatchVersion)
                     {
                         needUpdate = false;
                         lblUpdatePachJson.Text = "[ 获取成功，点击查看更多信息 ]";
                         lblUpdatePachJson.ForeColor = Color.RoyalBlue;
+
+                        wechatModifier.Config = newBag.Apps["Wechat"];
+                        qqModifier.Config = newBag.Apps["QQ"];
+                        timModifier.Config = newBag.Apps["TIM"];
+                        qqLiteModifier.Config = newBag.Apps["QQLite"];
+
+                        getPatchJsonStatus = "SUCCESS";
+                        InitControls();
+                        InitEditorsAndUI(txtPath.Text);
                     }
-                    getPatchJsonStatus = "SUCCESS";
-                    InitControls();
+                    else if (newBag.PatchVersion <= bag.PatchVersion)
+                    {
+                        needUpdate = false;
+                        lblUpdatePachJson.Text = "[ 软件内置补丁信息已经是最新 ]";
+                        lblUpdatePachJson.ForeColor = Color.RoyalBlue;
+                    }
+
                 }
                 catch (Exception ex)
                 {
@@ -329,8 +369,14 @@ namespace RevokeMsgPatcher
 
         private void radioButtons_CheckedChanged(object sender, EventArgs e)
         {
-            EnableAllButton(false);
             RadioButton radioButton = sender as RadioButton;
+            if (!radioButton.Checked)
+            {
+                return;
+            }
+
+            EnableAllButton(false);
+
             // 切换使用不同的防撤回对象
             if (rbtWechat.Checked)
             {
@@ -348,11 +394,11 @@ namespace RevokeMsgPatcher
             {
                 modifier = (QQLiteModifier)rbtQQLite.Tag;
             }
-            txtPath.Text = modifier.FindInstallPath();
             EnableAllButton(true);
+            // 触发了 txtPath_TextChanged 方法 已经调用了 InitEditorsAndUI(txtPath.Text);
+            // 也就是说 重新计算显示是否能够备份还原、版本和功能
+            txtPath.Text = modifier.FindInstallPath();
 
-            // 重新计算显示是否能够备份还原、版本和功能
-            InitEditorsAndUI(txtPath.Text);
             ga.RequestPageView($"{GetCheckedRadioButtonNameEn()}/{lblVersion.Text}/switch", "切换标签页");
         }
 

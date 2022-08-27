@@ -16,7 +16,8 @@ namespace RevokeMsgPatcher
             return new Bag
             {
                 Apps = AppConfig(),
-                LatestVersion = "1.1",
+                LatestVersion = "1.6",
+                PatchVersion = 20220820,
                 Notice = ""
             };
         }
@@ -48,7 +49,7 @@ namespace RevokeMsgPatcher
         {
             return new App
             {
-                Name = "Wechat",
+                Name = "WeChat",
                 FileTargetInfos = new Dictionary<string, TargetInfo>
                 {
                     {
@@ -56,12 +57,59 @@ namespace RevokeMsgPatcher
                         new TargetInfo
                         {
                             Name = "WeChatWin.dll",
-                            RelativePath = "WeChatWin.dll"
+                            RelativePath = "WeChatWin.dll",
+                            StartVersion = "1.0.0.0"
+                        }
+                    },
+                    {
+                        "WeChat.exe",
+                        new TargetInfo
+                        {
+                            Name = "WeChat.exe",
+                            RelativePath = "../WeChat.exe",
+                            StartVersion = "3.7.0.0",
+                            EndVersion = "3.7.0.26"
                         }
                     }
                 },
                 FileCommonModifyInfos = new Dictionary<string, List<CommonModifyInfo>>
                 {
+                    {
+                        "WeChat.exe",
+                        new List<CommonModifyInfo>
+                        {
+                            new CommonModifyInfo
+                            {
+                                Name="WeChatWin.dll",
+                                StartVersion="3.7.0.8",
+                                EndVersion="3.7.0.26",
+                                ReplacePatterns = new List<ReplacePattern>
+                                {
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("83 C4 08 84 C0 75 3F 68"),
+                                        Replace = ByteUtil.HexStringToByteArray("83 C4 08 84 C0 EB 3F 68"),
+                                        Category = "去除校验"
+                                    }
+                                }
+                            },
+                            new CommonModifyInfo
+                            {
+                                Name="WeChatWin.dll",
+                                StartVersion="3.7.0.0",
+                                EndVersion="3.7.0.8",
+                                ReplacePatterns = new List<ReplacePattern>
+                                {
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("85 C0 75 59"),
+                                        Replace = ByteUtil.HexStringToByteArray("85 C0 EB 59"),
+                                        Category = "去除校验"
+                                    }
+                                }
+                            }
+                        }
+                    },
                     {
                         "WeChatWin.dll",
                         new List<CommonModifyInfo>
@@ -69,8 +117,121 @@ namespace RevokeMsgPatcher
                             new CommonModifyInfo
                             {
                                 Name="WeChatWin.dll",
-                                StartVersion="3.4.0.0",
+                                StartVersion="3.7.6.0",
                                 EndVersion="",
+                                ReplacePatterns = new List<ReplacePattern>
+                                {
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("85 C0 74 32 B9 3F 3F 3F 3F 8A"),
+                                        Replace = ByteUtil.HexStringToByteArray("85 C0 EB 32 B9 3F 3F 3F 3F 8A"),
+                                        Category = "防撤回(老)"
+                                    },
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("83 C4 04 80 BD FF FB FF FF 00 74 58 8B 3D"),
+                                        Replace = ByteUtil.HexStringToByteArray("83 C4 04 80 BD FF FB FF FF 00 EB 58 8B 3D"),
+                                        Category = "多开"
+                                    }
+                                }
+                            },
+                            new CommonModifyInfo
+                            {
+                                Name="WeChatWin.dll",
+                                StartVersion="3.7.0.0",
+                                EndVersion="3.7.6.0",
+                                ReplacePatterns = new List<ReplacePattern>
+                                {
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("00 85 C0 74 32 B9 3F 3F 3F 3F 8A"),
+                                        Replace = ByteUtil.HexStringToByteArray("00 85 C0 EB 32 B9 3F 3F 3F 3F 8A"),
+                                        Category = "防撤回(老)"
+                                    },
+                                    // 带撤回提示
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("80 7D F2 00 6A 01 74"),
+                                        Replace = ByteUtil.HexStringToByteArray("80 7D F2 00 6A 01 EB"),
+                                        Category = "防撤回带提示(新)"
+                                    },
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("83 C4 04 80 BD 3F FC FF FF 00 74 58 8B 3D"),
+                                        Replace = ByteUtil.HexStringToByteArray("83 C4 04 80 BD 3F FC FF FF 00 EB 58 8B 3D"),
+                                        Category = "多开"
+                                    }
+                                }
+                            },
+                            new CommonModifyInfo
+                            {
+                                Name="WeChatWin.dll",
+                                StartVersion="3.6.5.0",
+                                EndVersion="3.7.0.0",
+                                ReplacePatterns = new List<ReplacePattern>
+                                {
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("00 85 C0 74 32 B9 3F 3F 3F 11 8A"),
+                                        Replace = ByteUtil.HexStringToByteArray("00 85 C0 EB 32 B9 3F 3F 3F 11 8A"),
+                                        Category = "防撤回"
+                                    },
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("83 C4 04 80 BD 3F FC FF FF 00 74 58 8B 3D"),
+                                        Replace = ByteUtil.HexStringToByteArray("83 C4 04 80 BD 3F FC FF FF 00 EB 58 8B 3D"),
+                                        Category = "多开"
+                                    }
+                                }
+                            },
+                            new CommonModifyInfo
+                            {
+                                Name="WeChatWin.dll",
+                                StartVersion="3.6.0.5",
+                                EndVersion="3.6.5.0",
+                                ReplacePatterns = new List<ReplacePattern>
+                                {
+                                    // 防撤回特征又和 3.4 时期一样了
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("EF 00 85 C0 74 32 B9 3F 3F 3F 11 8A"),
+                                        Replace = ByteUtil.HexStringToByteArray("EF 00 85 C0 EB 32 B9 3F 3F 3F 11 8A"),
+                                        Category = "防撤回"
+                                    },
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("83 C4 04 80 BD 2F FC FF FF 00 74 58 8B 3D"),
+                                        Replace = ByteUtil.HexStringToByteArray("83 C4 04 80 BD 2F FC FF FF 00 EB 58 8B 3D"),
+                                        Category = "多开"
+                                    }
+                                }
+                            },
+                            new CommonModifyInfo
+                            {
+                                Name="WeChatWin.dll",
+                                StartVersion="3.5.0.28",
+                                EndVersion="3.6.0.0",
+                                ReplacePatterns = new List<ReplacePattern>
+                                {
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("ED 00 85 C0 74 32 B9"),
+                                        Replace = ByteUtil.HexStringToByteArray("ED 00 33 C0 74 32 B9"),
+                                        Category = "防撤回"
+                                    },
+                                    new ReplacePattern
+                                    {
+                                        Search = ByteUtil.HexStringToByteArray("83 C4 04 80 BD 2F FC FF FF 00 74 58 8B 3D"),
+                                        Replace = ByteUtil.HexStringToByteArray("83 C4 04 80 BD 2F FC FF FF 00 EB 58 8B 3D"),
+                                        Category = "多开"
+                                    }
+                                }
+                            },
+                            new CommonModifyInfo
+                            {
+                                Name="WeChatWin.dll",
+                                StartVersion="3.4.0.0",
+                                EndVersion="3.5.0.0",
                                 ReplacePatterns = new List<ReplacePattern>
                                 {
                                     new ReplacePattern
@@ -198,9 +359,35 @@ namespace RevokeMsgPatcher
                 FileModifyInfos = new Dictionary<string, List<ModifyInfo>>
                 {
                     {
+                        "WeChat.exe",
+                        new List<ModifyInfo>
+                        {
+
+                        }
+                    },
+                    {
                         "WeChatWin.dll",
                         new List<ModifyInfo>
                         {
+/*                            new ModifyInfo {
+                                Name="WeChatWin.dll",
+                                Version="3.5.0.29",
+                                SHA1Before="018c3af27ac5d618a89018babc51ed90665ed1cc",
+                                SHA1After="8e070a908305061d86c6ff9cc3f30d8cfa802cac",
+                                Changes = new List<Change>
+                                {
+                                    new Change
+                                    {
+                                        Position =0x003AE6A9,
+                                        Content =new byte[] { 0x31 }
+                                    },
+                                    new Change
+                                    {
+                                        Position =0x00CA5967,
+                                        Content =new byte[] { 0xEB }
+                                    }
+                                }
+                            },*/
                             new ModifyInfo {
                                 Name="WeChatWin.dll",
                                 Version="3.3.5.25",

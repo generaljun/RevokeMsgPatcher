@@ -1,5 +1,8 @@
 ﻿using RevokeMsgPatcher.Model;
 using RevokeMsgPatcher.Utils;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace RevokeMsgPatcher.Modifier
 {
@@ -17,23 +20,61 @@ namespace RevokeMsgPatcher.Modifier
         /// <returns></returns>
         public override string FindInstallPath()
         {
-            string installPath = PathUtil.FindInstallPathFromRegistry("Wechat");
-            if (!IsAllFilesExist(installPath))
+            try
             {
-                foreach (string defaultPath in PathUtil.GetDefaultInstallPaths(@"Tencent\Wechat"))
+                string installPath = PathUtil.FindInstallPathFromRegistry("Wechat");
+                string realPath = GetRealInstallPath(installPath);
+                if (string.IsNullOrEmpty(realPath))
                 {
-                    if (IsAllFilesExist(defaultPath))
+                    List<string> defaultPathList = PathUtil.GetDefaultInstallPaths(@"Tencent\QQ");
+                    foreach (string defaultPath in defaultPathList)
                     {
-                        return defaultPath;
+                        realPath = GetRealInstallPath(defaultPath);
+                        if (!string.IsNullOrEmpty(realPath))
+                        {
+                            return defaultPath;
+                        }
                     }
                 }
+                else
+                {
+                    return realPath;
+                }
             }
-            else
+            catch (Exception e)
             {
-                return installPath;
+                Console.WriteLine(e.Message);
             }
             return null;
         }
+
+        /// <summary>
+        /// 微信 3.5.0.4 改变了目录结构
+        /// </summary>
+        /// <param name="basePath"></param>
+        /// <returns></returns>
+        private string GetRealInstallPath(string basePath)
+        {
+            if (basePath == null)
+            {
+                return null;
+            }
+            if (IsAllFilesExist(basePath))
+            {
+                return basePath;
+            }
+            DirectoryInfo[] directories = new DirectoryInfo(basePath).GetDirectories();
+            PathUtil.SortByLastWriteTimeDesc(ref directories); // 按修改时间倒序
+            foreach (DirectoryInfo folder in directories)
+            {
+                if (IsAllFilesExist(folder.FullName))
+                {
+                    return folder.FullName;
+                }
+            }
+            return null;
+        }
+
 
         /// <summary>
         /// 获取整个APP的当前版本
