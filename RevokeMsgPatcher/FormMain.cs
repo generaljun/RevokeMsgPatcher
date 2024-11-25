@@ -19,6 +19,7 @@ namespace RevokeMsgPatcher
         private AppModifier modifier = null;
 
         private WechatModifier wechatModifier = null;
+        private WeixinModifier weixinModifier = null;
         private QQModifier qqModifier = null;
         private TIMModifier timModifier = null;
         private QQLiteModifier qqLiteModifier = null;
@@ -32,6 +33,8 @@ namespace RevokeMsgPatcher
 
         Bag bag = null;
 
+        FormLiteLoaderQQNT formLiteLoader = null;
+
         public void InitModifier()
         {
             // 从配置文件中读取配置
@@ -40,12 +43,14 @@ namespace RevokeMsgPatcher
 
             // 初始化每个应用对应的修改者
             wechatModifier = new WechatModifier(bag.Apps["Wechat"]);
+            weixinModifier = new WeixinModifier(bag.Apps["Weixin"]);
             qqModifier = new QQModifier(bag.Apps["QQ"]);
             timModifier = new TIMModifier(bag.Apps["TIM"]);
             qqLiteModifier = new QQLiteModifier(bag.Apps["QQLite"]);
             qqntModifier = new QQNTModifier(bag.Apps["QQNT"]);
 
             rbtWechat.Tag = wechatModifier;
+            rbtWeixin.Tag = weixinModifier;
             rbtQQ.Tag = qqModifier;
             rbtTIM.Tag = timModifier;
             rbtQQLite.Tag = qqLiteModifier;
@@ -181,6 +186,8 @@ namespace RevokeMsgPatcher
 点击确定继续，点击取消重新选择！", "功能选择提示", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     if (result != DialogResult.Yes)
                     {
+                        EnableAllButton(true);
+                        btnRestore.Enabled = modifier.BackupExists();
                         return;
                     }
                 }
@@ -343,6 +350,7 @@ namespace RevokeMsgPatcher
                         lblUpdatePachJson.ForeColor = Color.RoyalBlue;
 
                         wechatModifier.Config = newBag.Apps["Wechat"];
+                        weixinModifier.Config = newBag.Apps["Weixin"];
                         qqModifier.Config = newBag.Apps["QQ"];
                         timModifier.Config = newBag.Apps["TIM"];
                         qqLiteModifier.Config = newBag.Apps["QQLite"];
@@ -380,6 +388,7 @@ namespace RevokeMsgPatcher
 
             tips += "支持以下版本" + Environment.NewLine;
             tips += " ➯ 微信：" + wechatModifier.Config.GetSupportVersionStr() + Environment.NewLine;
+            tips += " ➯ 微信4.0：" + weixinModifier.Config.GetSupportVersionStr() + Environment.NewLine;
             tips += " ➯ QQNT：" + qqntModifier.Config.GetSupportVersionStr() + Environment.NewLine;
             tips += " ➯ QQ：" + qqModifier.Config.GetSupportVersionStr() + Environment.NewLine;
             tips += " ➯ QQ轻聊版：" + qqLiteModifier.Config.GetSupportVersionStr() + Environment.NewLine;
@@ -407,6 +416,10 @@ namespace RevokeMsgPatcher
             {
                 modifier = (WechatModifier)rbtWechat.Tag;
             }
+            else if (rbtWeixin.Checked)
+            {
+                modifier = (WeixinModifier)rbtWeixin.Tag;
+            }
             else if (rbtQQ.Checked)
             {
                 modifier = (QQModifier)rbtQQ.Tag;
@@ -422,6 +435,7 @@ namespace RevokeMsgPatcher
             else if (rbtQQNT.Checked)
             {
                 modifier = (QQNTModifier)rbtQQNT.Tag;
+                ShowOrFocusFormLiteLoaderQQNT();
             }
 
             EnableAllButton(true);
@@ -430,6 +444,24 @@ namespace RevokeMsgPatcher
             txtPath.Text = modifier.FindInstallPath();
 
             ga.RequestPageView($"{GetCheckedRadioButtonNameEn()}/{lblVersion.Text}/switch", "切换标签页");
+        }
+
+        private void ShowOrFocusFormLiteLoaderQQNT()
+        {
+            if (formLiteLoader == null || formLiteLoader.IsDisposed)
+            {
+                formLiteLoader = new FormLiteLoaderQQNT();
+                formLiteLoader.Show();
+            }
+            else
+            {
+                if (formLiteLoader.WindowState == FormWindowState.Minimized)
+                {
+                    formLiteLoader.WindowState = FormWindowState.Normal;
+                }
+                formLiteLoader.BringToFront();
+                formLiteLoader.Focus();
+            }
         }
 
         private string GetCheckedRadioButtonNameEn()
